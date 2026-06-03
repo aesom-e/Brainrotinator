@@ -1,7 +1,7 @@
-import os
 import argparse
 from dotenv import load_dotenv
-from connection import BTClient, BTServer
+import client
+import server
 
 def main() -> int | None:
     load_dotenv()
@@ -11,11 +11,7 @@ def main() -> int | None:
     parser.add_argument("-server", action="store_true")
     args = parser.parse_args()
 
-    if args.client:
-        mac = os.getenv("SERVER_MAC")
-        bt = BTClient(mac)
-    else:
-        bt = BTServer()
-        bt.start()
+    if args.client: client.run()
+    else:           server.run()
 
 if __name__ == "__main__": exit(main())
