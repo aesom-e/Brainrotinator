@@ -6,7 +6,7 @@ class Subsystem:
     def __init__(self) -> None:
         from .schdeuler import CommandScheduler
         CommandScheduler.get_instance().register_subsystem(self)
-        self._default_command: Optional[Command] = None
+        self._default_command: Optional["Command"] = None
 
     def __repr__(self) -> str:
         return self.__class__.__name__
@@ -15,11 +15,11 @@ class Subsystem:
         pass
 
     @property
-    def default_command(self) -> Optional[Command]:
+    def default_command(self) -> Optional["Command"]:
         return self._default_command
 
     @default_command.setter
-    def default_command(self, command: Optional[Command]) -> None:
+    def default_command(self, command: Optional["Command"]) -> None:
         if command is not None and self not in command.requirements:
             raise ValueError(
                 f"{command} must require {self} to be its default command"
@@ -27,6 +27,6 @@ class Subsystem:
         self._default_command = command
 
     @property
-    def current_command(self) -> Optional[Command]:
+    def current_command(self) -> Optional["Command"]:
         from .schdeuler import CommandScheduler
         return CommandScheduler.get_instance().requiring(self)

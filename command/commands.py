@@ -9,7 +9,7 @@ class InstantCommand(Command):
 
     def __init__(self,
                  action: Callable[[], None],
-                 *requirements: Subsystem) -> None:
+                 *requirements: "Subsystem") -> None:
         super().__init__()
         self._action = action
         self.add_requirements(*requirements)
@@ -25,7 +25,7 @@ class RunCommand(Command):
 
     def __init__(self,
                  action: Callable[[], None],
-                 *requirements: Subsystem) -> None:
+                 *requirements: "Subsystem") -> None:
         super().__init__()
         self._action = action
         self.add_requirements(*requirements)
@@ -42,7 +42,7 @@ class StartEndCommand(Command):
     def __init__(self,
                  on_start: Callable[[], None],
                  on_end: Callable[[], None],
-                 *requirements: Subsystem) -> None:
+                 *requirements: "Subsystem") -> None:
         super().__init__()
         self._on_start = on_start
         self._on_end = on_end

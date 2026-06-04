@@ -20,7 +20,7 @@ class CommandScheduler:
         self._poll_callbacks: List[Callable[[], None]] = []
         self._disabled: bool = False
 
-    def register_subsystem(self, *subsystems: Subsystem) -> None:
+    def register_subsystem(self, *subsystems: "Subsystem") -> None:
         self._subsystems.update(subsystems)
 
     def _add_poll_callback(self, callback: Callable[[], None]) -> None:
@@ -98,7 +98,7 @@ class CommandScheduler:
     def is_scheduled(self, *commands: Command) -> bool:
         return all(c in self._scheduled for c in commands)
 
-    def requiring(self, subsystem: Subsystem) -> Optional[Command]:
+    def requiring(self, subsystem: "Subsystem") -> Optional[Command]:
         return self._requirements.get(subsystem)
 
     @property

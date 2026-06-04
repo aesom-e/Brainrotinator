@@ -10,7 +10,7 @@ class InterruptionBehaviour(Enum):
 
 class Command(ABC):
     def __init__(self) -> None:
-        self._requirements: Set[Subsystem] = set()
+        self._requirements: Set["Subsystem"] = set()
 
     def __repr__(self) -> str:
         return self.__class__.__name__
@@ -23,9 +23,9 @@ class Command(ABC):
     def is_finished(self) -> bool: ...
 
     @property
-    def requirements(self) -> Set[Subsystem]: return self._requirements
+    def requirements(self) -> Set["Subsystem"]: return self._requirements
 
-    def add_requirements(self, *subsystems: Subsystem) -> None:
+    def add_requirements(self, *subsystems: "Subsystem") -> None:
         self._requirements.update(subsystems)
 
     @property
