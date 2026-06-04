@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, FrozenSet, List, Optional, Set
+from typing import TYPE_CHECKING, Dict, FrozenSet, List, Optional, Set, Callable
 from .command import Command, InterruptionBehaviour
 
 if TYPE_CHECKING: from .subsystem import Subsystem
@@ -17,10 +17,14 @@ class CommandScheduler:
         self._subsystems: Set[Subsystem] = set()
         self._pending_schedule: List[Command] = []
         self._pending_cancel: List[Command] = []
+        self._poll_callbacks: List[Callable[[], None]] = []
         self._disabled: bool = False
 
     def register_subsystem(self, *subsystems: Subsystem) -> None:
         self._subsystems.update(subsystems)
+
+    def _add_poll_callback(self, callback: Callable[[], None]) -> None:
+        self._poll_callbacks.append(callback)
 
     def schedule(self, *commands: Command) -> None:
         self._pending_schedule.extend(commands)
@@ -34,7 +38,7 @@ class CommandScheduler:
     def _schedule_now(self, command: Command) -> None:
         if command in self._scheduled: return
 
-        if self._disabled and not command.run_when_disabled(): return
+        if self._disabled and not command.runs_when_disabled(): return
 
         conflicting: Set[Command] = set()
         for req in command.requirements:
@@ -64,21 +68,29 @@ class CommandScheduler:
         for subsystem in self._subsystems:
             subsystem.periodic()
 
-        # 2. Execute all running commands and collect the finished ones
+        # 2. Poll triggers
+        for cb in self._poll_callbacks: cb()
+
+        # 3. Flush pending schedules (may have been queued by trigger polls)
+        for command in self._pending_schedule:
+            self._schedule_now(command)
+        self._pending_schedule.clear()
+
+        # 4. Execute all running commands and collect the finished ones
         finished: List[Command] = []
         for command in list(self._scheduled):
             command.execute()
             if command.is_finished(): finished.append(command)
 
-        # 3. End finished commands
+        # 5. End finished commands
         for command in finished: self._cancel_now(command, interrupted=False)
 
-        # 4. Schedule default commands for unoccupied subsystems
+        # 6. Schedule default commands for unoccupied subsystems
         for subsystem in self._subsystems:
             if subsystem.default_command is not None and subsystem not in self._requirements:
                 self._schedule_now(subsystem.default_command)
 
-        # 5. Flush pending cancels
+        # 7. Flush pending cancels
         for command in self._pending_cancel:
             self._cancel_now(command, interrupted=True)
         self._pending_cancel.clear()

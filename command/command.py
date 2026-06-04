@@ -34,3 +34,11 @@ class Command(ABC):
 
     @staticmethod
     def runs_when_disabled() -> bool: return False
+
+    def schedule(self) -> None:
+        from .schdeuler import CommandScheduler
+        CommandScheduler.get_instance().schedule(self)
+
+    def cancel(self) -> None:
+        from .schdeuler import CommandScheduler
+        CommandScheduler.get_instance().cancel(self)
