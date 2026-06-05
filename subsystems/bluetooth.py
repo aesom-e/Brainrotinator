@@ -12,7 +12,7 @@ UART_TX_UUID      = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 class BTServer:
     def __init__(self, name="PiServer") -> None:
         self.name: str = name
-        self._server: Optional["BlessServer"] = None
+        self._server: Optional[BlessServer] = None
         self._rx_queue: asyncio.Queue = asyncio.Queue()
 
     async def start(self) -> None:

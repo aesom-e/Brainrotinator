@@ -16,9 +16,9 @@ class ServoSubsystem(Subsystem):
         self._pi.set_servo_pulsewidth(self._pin, pw)
 
 class DoubleClickCommand(Command):
-    _PRESS_SECS: float = 0.15
-    _RETURN_SECS: float = 0.15
-    _GAP_SECS: float = 0.10
+    _PRESS_SECS: float = 0.20
+    _RETURN_SECS: float = 0.20
+    _GAP_SECS: float = 0.11
 
     def __init__(self,
                  servo: ServoSubsystem,
