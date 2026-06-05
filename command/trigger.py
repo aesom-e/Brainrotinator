@@ -4,7 +4,7 @@ if TYPE_CHECKING:
     from .command import Command
 
 class Trigger:
-    def __init__(self, condition: Callable[[], bool]) -> None:
+    def __init__(self, condition: Optional[Callable[[], bool]] = None) -> None:
         self._condition = condition
 
     def get(self) -> bool:

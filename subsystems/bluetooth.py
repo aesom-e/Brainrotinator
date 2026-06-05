@@ -1,6 +1,8 @@
-from typing import Any, Optional
+from typing import Any, Optional, override
 import asyncio
 from bleak import BleakGATTCharacteristic, BleakClient, BleakScanner
+from bless import BlessServer, GATTAttributePermissions, GATTCharacteristicProperties
+from command import InstantCommand, Subsystem, Trigger
 
 # These are well-known constants
 UART_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
@@ -14,12 +16,6 @@ class BTServer:
         self._rx_queue: asyncio.Queue = asyncio.Queue()
 
     async def start(self) -> None:
-        from bless import (
-            BlessServer,
-            GATTAttributePermissions,
-            GATTCharacteristicProperties
-        )
-
         self._server = BlessServer(name=self.name)
         self._server.read_request_func = self._read_request
         self._server.write_request_func = self._write_request
@@ -43,7 +39,8 @@ class BTServer:
         await self._server.start()
         print(f"Advertising as {self.name}")
 
-    def _read_request(self, characteristic: Any, **kwargs) -> bytearray:
+    @staticmethod
+    def _read_request(characteristic: Any, **kwargs) -> bytearray:
         return characteristic.value
 
     def _write_request(self, characteristic: Any, value: Any, **kwargs) -> None:
@@ -92,3 +89,80 @@ class BTClient:
         if self._client is not None and self._client.is_connected:
             await self._client.disconnect()
         self._client = None
+
+# A tagged enum would be great here
+class BTSubsystem(Subsystem):
+    def __init__(self, *,
+                 server: Optional[BTServer] = None,
+                 client: Optional[BTClient] = None) -> None:
+        super().__init__()
+
+        if server is None and client is None:
+            raise ValueError("One of server or client must not be None")
+
+        if server is not None:
+            self._server: BTServer = server
+            self._is_server: bool = True
+        else:
+            self._client: BTClient = client
+            self._is_server: bool = False
+
+        self._message_queue: asyncio.Queue[str] = asyncio.Queue()
+        self._update_queue_task: asyncio.Task = asyncio.get_event_loop().create_task(self._update_queue)
+
+    async def _update_queue(self) -> None:
+        if self._is_server:
+            while True: await self._message_queue.put(await self._server.receive())
+        while True: await self._message_queue.put(await self._client.receive())
+
+    @property
+    def is_server(self) -> bool: return self._is_server
+
+    async def start(self) -> None:
+        if self._is_server: await self._server.start()
+        else:               await self._client.connect()
+
+    async def send(self, message: str) -> None:
+        if self._is_server: await self._server.send(message)
+        else:               await self._client.send(message)
+
+    async def receive(self) -> str:
+        if not self._message_queue.empty(): return self._message_queue.get_nowait()
+
+        else: return await self._message_queue.get()
+
+    def receive_nowait(self) -> Optional[str]:
+        if self._message_queue.empty(): return None
+        return self._message_queue.get_nowait()
+
+    async def close(self) -> None:
+        if self._update_queue_task: self._update_queue_task.cancel()
+
+        if self._is_server: await self._server.close()
+        else:               await self._client.close()
+
+class BTSendCommand(InstantCommand):
+    def __init__(self, bt: BTSubsystem, message: str) -> None:
+        self._bt: BTSubsystem = bt
+        self._message: str = message
+
+        super().__init__(self._send_message, bt)
+
+    def _send_message(self) -> None:
+        asyncio.get_event_loop().create_task(self._bt.send(self._message))
+
+class BTMessageTrigger(Trigger):
+    def __init__(self, bt: BTSubsystem, message: str) -> None:
+        super().__init__()
+
+        self._bt: BTSubsystem = bt
+        self._message: message = message
+
+    @override
+    def get(self) -> bool:
+        # Currently, this drains the receive queue
+        # This is bad practice, but I'm under time crunch right now
+        # so this will have to do
+        msg = self._bt.receive_nowait()
+        if msg is None: return False
+        return msg == self._message
