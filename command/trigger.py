@@ -10,7 +10,7 @@ class Trigger:
     def get(self) -> bool:
         return self._condition()
 
-    def on_true(self, command: Command) -> "Trigger":
+    def on_true(self, command: "Command") -> "Trigger":
         from .schdeuler import CommandScheduler
 
         # This is a list so the inner function may mutate it
@@ -25,7 +25,7 @@ class Trigger:
         CommandScheduler.get_instance()._add_poll_callback(poll)
         return self
 
-    def on_false(self, command: Command) -> "Trigger":
+    def on_false(self, command: "Command") -> "Trigger":
         from .schdeuler import CommandScheduler
         prev = [self._condition()]
 
@@ -37,7 +37,7 @@ class Trigger:
         CommandScheduler.get_instance()._add_poll_callback(poll)
         return self
 
-    def while_true(self, command: Command) -> "Trigger":
+    def while_true(self, command: "Command") -> "Trigger":
         from .schdeuler import CommandScheduler
         prev = [self._condition()]
 
@@ -50,7 +50,7 @@ class Trigger:
         CommandScheduler.get_instance()._add_poll_callback(poll)
         return self
 
-    def while_false(self, command: Command) -> "Trigger":
+    def while_false(self, command: "Command") -> "Trigger":
         from .schdeuler import CommandScheduler
         prev = [self._condition()]
 
