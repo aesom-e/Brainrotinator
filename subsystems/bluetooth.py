@@ -108,7 +108,7 @@ class BTSubsystem(Subsystem):
             self._is_server: bool = False
 
         self._message_queue: asyncio.Queue[str] = asyncio.Queue()
-        self._update_queue_task: asyncio.Task = asyncio.get_event_loop().create_task(self._update_queue)
+        self._update_queue_task: asyncio.Task = asyncio.get_event_loop().create_task(self._update_queue())
 
     async def _update_queue(self) -> None:
         if self._is_server:
