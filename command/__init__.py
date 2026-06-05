@@ -9,6 +9,7 @@ from .commands import (
     WaitUntilCommand,
     PrintCommand
 )
+from .trigger import Trigger
 
 __all__ = [
     "Command",
@@ -20,5 +21,6 @@ __all__ = [
     "StartEndCommand",
     "WaitCommand",
     "WaitUntilCommand",
-    "PrintCommand"
+    "PrintCommand",
+    "Trigger"
 ]
