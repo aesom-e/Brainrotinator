@@ -10,14 +10,14 @@ async def run() -> NoReturn:
     #bt = BTSubsystem(client=BTClient("PiServer"))
     #await bt.start()
 
-    servo = ServoSubsystem(13)
-    double_click_command = DoubleClickCommand(servo, 700, 950)
+    #servo = ServoSubsystem(13)
+    #double_click_command = DoubleClickCommand(servo, 700, 950)
 
     stepper = ULN2003Subsystem((21, 20, 16, 12))
-    scroll_command = StepCommand(stepper, 1700, 0.0004)
+    scroll_command = StepCommand(stepper, 1700, 0.0005)
     cleanup.register(lambda: stepper.stop())
 
-    double_click_command.schedule()
+    #double_click_command.schedule()
     scroll_command.schedule()
 
     while True:
