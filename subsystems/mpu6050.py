@@ -11,6 +11,11 @@ class GyroReading:
     z: float
     time: float # Seconds since epoch
 
+    def __iter__(self):
+        yield self.x
+        yield self.y
+        yield self.z
+
     def __repr__(self) -> str:
         return f"GyroReading(x={self.x:.2f}, y={self.y:.2f}, z={self.z:.2f})"
 
