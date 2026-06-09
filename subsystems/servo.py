@@ -46,7 +46,7 @@ class DoubleClickCommand(Command):
     def initialize(self) -> None:
         self._servo.set_pw(self._pressed_us)
         self._phase = 0
-        self._next_time = time.monotonic() + self._pressed_us
+        self._next_time = time.monotonic() + self._GAP_SECS
 
     @override
     def execute(self) -> None:
