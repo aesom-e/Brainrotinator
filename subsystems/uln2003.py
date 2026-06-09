@@ -37,8 +37,6 @@ _SEQUENCES: Dict[StepMode, List[List[int]]] = {
 _DEFAULT_STEPS_PER_REV: int = 2048
 
 class ULN2003Subsystem(Subsystem):
-    _INIT: bool = False
-
     def __init__(self,
                  pins: Tuple[int, int, int, int],
                  *,
@@ -58,13 +56,6 @@ class ULN2003Subsystem(Subsystem):
         for pin in self._pins:
             GPIO.setup(pin, GPIO.OUT)
             GPIO.output(pin, GPIO.LOW)
-
-        # Horrible but it should work
-        if not self._INIT:
-            self._INIT = True
-            import subprocess
-            subprocess.run(["sudo", "pigpiod"], capture_output=True)
-            time.sleep(1)
 
     def _apply_step(self) -> None:
         row = self._sequence[self._seq_index]
@@ -106,7 +97,6 @@ class StepCommand(Command):
         self._delay: float = step_delay
         self._done: int = 0
         self._next_step_time: float = 0.
-        print("StepCommand")
 
     @override
     def initialize(self) -> None:

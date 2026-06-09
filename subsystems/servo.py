@@ -1,16 +1,26 @@
 import time
 from typing import Optional, override
+import pigpio
 from command import Command, Subsystem
 
 class ServoSubsystem(Subsystem):
+    _INIT: bool = False
+
     def __init__(self, pin: int) -> None:
         super().__init__()
         self._pin: int = pin
 
-        import pigpio
+        # Horrible but it should work
+        if not self._INIT:
+            self._INIT = True
+            import subprocess
+            subprocess.run(["sudo", "pigpiod"], capture_output=True)
+            time.sleep(1)
+
         pi = pigpio.pi()
         if pi.connected:
             self._pi: pigpio.pi = pi
+        else: raise RuntimeError("pigpio pi not connected")
 
     def set_pw(self, pw: int) -> None:
         self._pi.set_servo_pulsewidth(self._pin, pw)

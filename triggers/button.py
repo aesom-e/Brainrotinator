@@ -23,4 +23,4 @@ class ButtonDownTrigger(Trigger):
     @override
     def get(self) -> bool:
         down_state: bool = self._pull is ButtonPull.PULL_DOWN
-        return GPIO.input(self._pin) is down_state
+        return GPIO.input(self._pin) == down_state
