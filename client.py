@@ -20,7 +20,6 @@ async def run() -> NoReturn:
 
     while True:
 
-
         #print(await bt.receive())
 
         CommandScheduler.get_instance().run()
