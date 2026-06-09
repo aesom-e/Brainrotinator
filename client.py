@@ -15,12 +15,11 @@ async def run() -> NoReturn:
     double_click_command = DoubleClickCommand(servo, 700, 950)
 
     stepper = ULN2003Subsystem((21, 20, 16, 12))
-    scroll_command = StepCommand(stepper, 1700, 0.0005)
+    scroll_command = StepCommand(stepper, 1700, 0.0004)
     cleanup.register(lambda: stepper.stop())
 
     button = ButtonDownTrigger(18, ButtonPull.PULL_UP)
 
-    double_click_command.schedule()
     button.on_true(scroll_command)
 
     while True:
