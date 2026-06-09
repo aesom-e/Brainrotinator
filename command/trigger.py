@@ -15,10 +15,10 @@ class Trigger:
 
         # This is a list so the inner function may mutate it
         # Otherwise, we would just rebind a local variable (not what we want)
-        prev = [self._condition()]
+        prev = [self.get()]
 
         def poll() -> None:
-            cur = self._condition()
+            cur = self.get()
             if cur and not prev[0]: command.schedule()
             prev[0] = cur
 
@@ -27,7 +27,7 @@ class Trigger:
 
     def on_false(self, command: "Command") -> "Trigger":
         from .schdeuler import CommandScheduler
-        prev = [self._condition()]
+        prev = [self.get()]
 
         def poll() -> None:
             cur = self._condition
@@ -39,10 +39,10 @@ class Trigger:
 
     def while_true(self, command: "Command") -> "Trigger":
         from .schdeuler import CommandScheduler
-        prev = [self._condition()]
+        prev = [self.get()]
 
         def poll() -> None:
-            cur = self._condition()
+            cur = self.get()
             if cur:       command.schedule()
             elif prev[0]: command.cancel()
             prev[0] = cur
@@ -52,10 +52,10 @@ class Trigger:
 
     def while_false(self, command: "Command") -> "Trigger":
         from .schdeuler import CommandScheduler
-        prev = [self._condition()]
+        prev = [self.get()]
 
         def poll() -> None:
-            cur = self._condition()
+            cur = self.get()
             if not cur:       command.schedule()
             elif not prev[0]: command.cancel()
             prev[0] = cur
