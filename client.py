@@ -4,6 +4,7 @@ import cleanup
 from subsystems.bluetooth import BTClient, BTSubsystem
 from subsystems.servo import ServoSubsystem, DoubleClickCommand
 from subsystems.uln2003 import ULN2003Subsystem, StepCommand
+from triggers.button import ButtonDownTrigger, ButtonPull
 from command import CommandScheduler
 
 async def run() -> NoReturn:
@@ -17,8 +18,10 @@ async def run() -> NoReturn:
     scroll_command = StepCommand(stepper, 1700, 0.0005)
     cleanup.register(lambda: stepper.stop())
 
+    button = ButtonDownTrigger(18, ButtonPull.PULL_UP)
+
     #double_click_command.schedule()
-    scroll_command.schedule()
+    button.on_true(scroll_command)
 
     while True:
 
