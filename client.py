@@ -1,6 +1,5 @@
 import os
 from typing import NoReturn
-import cleanup
 from subsystems.bluetooth import BTClient, BTSubsystem
 from subsystems.servo import ServoSubsystem, DoubleClickCommand
 from subsystems.uln2003 import ULN2003Subsystem, StepCommand
@@ -16,7 +15,6 @@ async def run() -> NoReturn:
 
     stepper = ULN2003Subsystem((21, 20, 16, 12))
     scroll_command = StepCommand(stepper, 1700, 0.001)
-    cleanup.register(lambda: stepper.stop())
 
     button = ButtonDownTrigger(18, ButtonPull.PULL_UP)
 

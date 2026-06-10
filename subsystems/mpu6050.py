@@ -1,8 +1,11 @@
 import struct
 import time
+from typing import override, Tuple, Optional
+from enum import Enum, auto
 from dataclasses import dataclass
 import smbus2
 from command import Subsystem
+import cleanup
 
 @dataclass
 class GyroReading:
@@ -18,6 +21,10 @@ class GyroReading:
 
     def __repr__(self) -> str:
         return f"GyroReading(x={self.x:.2f}, y={self.y:.2f}, z={self.z:.2f})"
+
+class Extreme(Enum):
+    LeftExtreme = auto()
+    RightExtreme = auto()
 
 class MPU6050(Subsystem):
     _DEFAULT_ADDRESS: int = 0x68
@@ -44,7 +51,25 @@ class MPU6050(Subsystem):
         self._addr: int = address
         self._scale: float = self._SCALE[full_scale]
 
+        self._extremes: Tuple[Optional[Extreme], Optional[Extreme], Optional[Extreme]] = (None, None, None)
+
         self._init_device(full_scale)
+        cleanup.register(self._close)
+
+    @override
+    def periodic(self) -> None:
+        x, y, z = self.read()
+        self._extremes = (
+            self._get_extreme(x),
+            self._get_extreme(y),
+            self._get_extreme(z)
+        )
+
+    @staticmethod
+    def _get_extreme(value: float) -> Optional[Extreme]:
+        if value < -160.: return Extreme.LeftExtreme
+        if value > 160.: return Extreme.RightExtreme
+        return None
 
     def _init_device(self, full_scale: int) -> None:
         # Wake the device
@@ -62,6 +87,11 @@ class MPU6050(Subsystem):
         fs_sel = self._FS_SEL[full_scale]
         self._bus.write_byte_data(self._addr, self._REG_GYRO_CONFIG, fs_sel << 3)
 
+        # Read back to verify
+        actual = self._bus.read_byte_data(self._addr, self._REG_GYRO_CONFIG)
+        if actual != fs_sel << 3:
+            raise RuntimeError(f"GYRO_CONFIG write failed")
+
     def read(self) -> GyroReading:
         raw = self._bus.read_i2c_block_data(self._addr, self._REG_GYRO_XOUT_H, 6)
         x, y, z = struct.unpack(">hhh", bytes(raw))
@@ -73,4 +103,7 @@ class MPU6050(Subsystem):
             time=now
         )
 
-    def close(self) -> None: self._bus.close()
+    @property
+    def extremes(self) -> Tuple[Optional[Extreme], Optional[Extreme], Optional[Extreme]]: return self._extremes
+
+    def _close(self) -> None: self._bus.close()

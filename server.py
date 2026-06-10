@@ -1,7 +1,6 @@
 from typing import NoReturn
-import cleanup
 from subsystems.bluetooth import BTServer, BTSubsystem, BTSendCommand
-from subsystems.mpu6050 import MPU6050, GyroReading
+from subsystems.mpu6050 import MPU6050, GyroReading, Extreme
 from command import CommandScheduler
 
 async def run() -> NoReturn:
@@ -9,12 +8,12 @@ async def run() -> NoReturn:
     #await bt.start()
 
     gyro = MPU6050()
-    cleanup.register(lambda: gyro.close())
 
     i = 0
     while True:
         #BTSendCommand(bt, str(i)).schedule()
         i += 1
+        print_reading(gyro.read(), gyro.extremes)
 
         CommandScheduler.get_instance().run()
 
@@ -27,10 +26,13 @@ def make_bar(value: float) -> str:
     bar = '#' * filled + '.' * (40 - filled)
     return f"[{bar}] {value:.1f}"
 
-def print_reading(reading: GyroReading) -> None:
+def print_reading(reading: GyroReading, extremes) -> None:
     lines = []
     for name, val in zip("xyz", reading):
-        lines.append(f"{name}: {make_bar(val)}")
+        line = f"{name}: {make_bar(val)}"
+        if extremes[ord(name) - ord('x')] is Extreme.LeftExtreme: line += " [Left Extreme]"
+        if extremes[ord(name) - ord('x')] is Extreme.RightExtreme: line += " [Right Extreme]"
+        lines.append(line)
 
     print("\033[3A", end="")
     for line in lines: print(f"\033[2K{line}")

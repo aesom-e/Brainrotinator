@@ -2,7 +2,7 @@ import time
 from enum import Enum, auto
 from typing import Tuple, List, Dict, override
 import RPi.GPIO as GPIO
-from command import Command, InstantCommand, Subsystem
+from command import Command, Subsystem
 
 class StepMode(Enum):
     HALF = auto()
