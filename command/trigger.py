@@ -70,6 +70,3 @@ class Trigger:
 
     def __invert__(self) -> "Trigger":
         return Trigger(lambda: not self.get())
-
-    def __repr__(self) -> str:
-        return f"Trigger({self._condition})"

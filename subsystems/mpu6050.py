@@ -4,7 +4,7 @@ from typing import override, Tuple, Optional
 from enum import Enum, auto
 from dataclasses import dataclass
 import smbus2
-from command import Subsystem
+from command import Subsystem, Trigger
 import cleanup
 
 @dataclass
@@ -107,3 +107,17 @@ class MPU6050(Subsystem):
     def extremes(self) -> Tuple[Optional[Extreme], Optional[Extreme], Optional[Extreme]]: return self._extremes
 
     def _close(self) -> None: self._bus.close()
+
+class GyroExtremeTrigger(Trigger):
+    def __init__(self,
+                 gyro: MPU6050,
+                 extreme: Tuple[str, Extreme]) -> None:
+        super().__init__()
+        self._gyro: MPU6050 = gyro
+        if extreme[0] not in ('x', 'y', 'z'): raise ValueError("Extreme must be one of ('x', 'y', 'z')")
+        self._extreme: Tuple[int, Extreme] = ord(extreme[0]) - ord('x'), extreme[1]
+
+    @override
+    def get(self) -> bool:
+        extremes = self._gyro.extremes
+        return extremes[self._extreme[0]] is self._extreme[1]
