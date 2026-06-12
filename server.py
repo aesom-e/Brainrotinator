@@ -18,12 +18,12 @@ async def run() -> NoReturn:
 
     UARTSendCommand(uart, "Works").schedule()
 
-    i = 0
-    while True:
-        i += 1
-        #print_reading(gyro.read(), gyro.extremes)
+    asyncio.create_task(command_scheduler_loop())
 
+async def command_scheduler_loop() -> None:
+    while True:
         CommandScheduler.get_instance().run()
+        await asyncio.sleep(0)  # Yield to asyncio
 
 # THESE ARE FOR TESTING
 

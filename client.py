@@ -23,9 +23,9 @@ async def run() -> NoReturn:
 
     #UARTMessageTrigger(uart, "Works").on_true(PrintCommand("Works"))
 
-    while True:
-        msg = uart.receive_nowait()
-        if msg is not None: print(msg)
+    asyncio.create_task(command_scheduler_loop())
 
+async def command_scheduler_loop() -> None:
+    while True:
         CommandScheduler.get_instance().run()
-        await asyncio.sleep(0) # Yield to asyncio
+        await asyncio.sleep(0)  # Yield to asyncio
