@@ -23,7 +23,9 @@ async def run() -> NoReturn:
 
     #UARTMessageTrigger(uart, "Works").on_true(PrintCommand("Works"))
 
-    asyncio.create_task(command_scheduler_loop())
+    while True:
+        CommandScheduler.get_instance().run()
+        await asyncio.sleep(0)  # Yield to asyncio
 
 async def command_scheduler_loop() -> None:
     while True:
