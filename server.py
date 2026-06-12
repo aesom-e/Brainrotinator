@@ -8,14 +8,16 @@ async def run() -> NoReturn:
     #await bt.start()
 
     gyro = MPU6050()
-    extreme_trigger = GyroExtremeTrigger(gyro, ('x', Extreme.RightExtreme))
+    scroll_trigger = GyroExtremeTrigger(gyro, ('x', Extreme.RightExtreme))
+    like_trigger = GyroExtremeTrigger(gyro, ('y', Extreme.RightExtreme))
 
     i = 0
     while True:
         #BTSendCommand(bt, str(i)).schedule()
         i += 1
         #print_reading(gyro.read(), gyro.extremes)
-        extreme_trigger.on_true(PrintCommand("Right Extreme"))
+        scroll_trigger.on_true(PrintCommand("Scroll"))
+        like_trigger.on_true(PrintCommand("Like"))
 
         CommandScheduler.get_instance().run()
 
