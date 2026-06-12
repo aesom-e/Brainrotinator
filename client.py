@@ -9,6 +9,7 @@ from command import CommandScheduler, PrintCommand
 async def run() -> NoReturn:
     uart = UARTSubsystem()
     await uart.start()
+    await asyncio.sleep(1) # Wait for everything to be up
 
     servo = ServoSubsystem(13)
     double_click_command = DoubleClickCommand(servo, 700, 950)

@@ -7,6 +7,7 @@ from command import CommandScheduler, PrintCommand
 async def run() -> NoReturn:
     uart = UARTSubsystem()
     await uart.start()
+    await asyncio.sleep(1) # Wait for everything to be up
 
     gyro = MPU6050()
     scroll_trigger = GyroExtremeTrigger(gyro, ('x', Extreme.RightExtreme))
