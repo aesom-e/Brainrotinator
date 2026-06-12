@@ -1,4 +1,4 @@
-import os
+import asyncio
 from typing import NoReturn
 from subsystems.bluetooth import BTClient, BTSubsystem
 from subsystems.servo import ServoSubsystem, DoubleClickCommand
@@ -7,8 +7,8 @@ from triggers.button import ButtonDownTrigger, ButtonPull
 from command import CommandScheduler
 
 async def run() -> NoReturn:
-    #bt = BTSubsystem(client=BTClient("PiServer"))
-    #await bt.start()
+    bt = BTSubsystem(client=BTClient("PiServer"))
+    await bt.start()
 
     servo = ServoSubsystem(13)
     double_click_command = DoubleClickCommand(servo, 700, 950)
@@ -21,7 +21,8 @@ async def run() -> NoReturn:
     button.on_true(scroll_command)
 
     while True:
-
-        #print(await bt.receive())
+        msg = bt.receive_nowait()
+        if msg is not None: print(msg)
 
         CommandScheduler.get_instance().run()
+        await asyncio.sleep(0) # Yield to asyncio

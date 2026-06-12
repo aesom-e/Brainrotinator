@@ -52,6 +52,10 @@ class BTServer:
         char.value = message.encode()
         self._server.update_value(UART_SERVICE_UUID, UART_TX_UUID)
 
+    async def wait_for_connection(self) -> None:
+        while len(self._server._subscribed_clients) == 0:
+            await asyncio.sleep(0.1)
+
     async def receive(self) -> str:
         return await self._rx_queue.get()
 
@@ -156,7 +160,7 @@ class BTMessageTrigger(Trigger):
         super().__init__()
 
         self._bt: BTSubsystem = bt
-        self._message: message = message
+        self._message: str = message
 
     @override
     def get(self) -> bool:

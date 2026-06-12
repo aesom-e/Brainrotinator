@@ -1,23 +1,27 @@
+import asyncio
 from typing import NoReturn
 from subsystems.bluetooth import BTServer, BTSubsystem, BTSendCommand
 from subsystems.mpu6050 import MPU6050, GyroReading, Extreme, GyroExtremeTrigger
 from command import CommandScheduler, PrintCommand
 
 async def run() -> NoReturn:
-    #bt = BTSubsystem(server=BTServer())
-    #await bt.start()
+    bt = BTSubsystem(server=BTServer())
+    await bt.start()
+    await asyncio.sleep(2) # Hopefully bluetooth connects
 
     gyro = MPU6050()
     scroll_trigger = GyroExtremeTrigger(gyro, ('x', Extreme.RightExtreme))
     like_trigger = GyroExtremeTrigger(gyro, ('y', Extreme.RightExtreme))
 
+    scroll_trigger.on_true(PrintCommand("Scroll"))
+    like_trigger.on_true(PrintCommand("Like"))
+
+    BTSendCommand(bt, "Works").schedule()
+
     i = 0
     while True:
-        #BTSendCommand(bt, str(i)).schedule()
         i += 1
         #print_reading(gyro.read(), gyro.extremes)
-        scroll_trigger.on_true(PrintCommand("Scroll"))
-        like_trigger.on_true(PrintCommand("Like"))
 
         CommandScheduler.get_instance().run()
 
