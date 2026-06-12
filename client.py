@@ -21,8 +21,11 @@ async def run() -> NoReturn:
 
     button.on_true(scroll_command)
 
-    UARTMessageTrigger(uart, "Works").on_true(PrintCommand("Works"))
+    #UARTMessageTrigger(uart, "Works").on_true(PrintCommand("Works"))
 
     while True:
+        msg = uart.receive_nowait()
+        if msg is not None: print(msg)
+
         CommandScheduler.get_instance().run()
         await asyncio.sleep(0) # Yield to asyncio
